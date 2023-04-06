@@ -28,10 +28,54 @@ class MessageSenderImplTest {
         headers.put("x-real-ip", "172.123.12.19");
 
         MessageSender messageSenderMock = new MessageSenderImpl(geoServiceMock, localizationServiceMock);
-        String preference = messageSenderMock.send(headers);
+        String receive = messageSenderMock.send(headers);
 
         String expect = "Добро пожаловать";
 
-        Assertions.assertEquals(expect, preference);
+        Assertions.assertEquals(expect, receive);
+    }
+
+    @Test
+    void test_always_sender_english_if_IP_eng() {
+        Location locationMock = Mockito.mock(Location.class);
+        Mockito.when(locationMock.getCountry()).thenReturn(Country.USA);
+
+        GeoService geoServiceMock = Mockito.mock(GeoServiceImpl.class);
+        Mockito.when(geoServiceMock.byIp("96.44.183.149")).thenReturn(locationMock);
+
+        LocalizationService localizationServiceMock = Mockito.mock(LocalizationService.class);
+        Mockito.when(localizationServiceMock.locale(Country.USA)).thenReturn("Welcome");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-real-ip", "96.44.183.149");
+
+        MessageSender messageSenderMock = new MessageSenderImpl(geoServiceMock, localizationServiceMock);
+        String receive = messageSenderMock.send(headers);
+
+        String expect = "Welcome";
+
+        Assertions.assertEquals(expect, receive);
+    }
+
+    @Test
+    void test_IP_address_is_null() {
+        Location locationMock = Mockito.mock(Location.class);
+        Mockito.when(locationMock.getCountry()).thenReturn(Country.USA);
+
+        GeoService geoServiceMock = Mockito.mock(GeoServiceImpl.class);
+        Mockito.when(geoServiceMock.byIp("")).thenReturn(locationMock);
+
+        LocalizationService localizationServiceMock = Mockito.mock(LocalizationService.class);
+        Mockito.when(localizationServiceMock.locale(Country.USA)).thenReturn("Welcome");
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("x-real-ip", "");
+
+        MessageSender messageSenderMock = new MessageSenderImpl(geoServiceMock, localizationServiceMock);
+        String receive = messageSenderMock.send(headers);
+
+        String expect = "Welcome";
+
+        Assertions.assertEquals(expect, receive);
     }
 }
